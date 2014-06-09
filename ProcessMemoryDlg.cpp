@@ -86,6 +86,7 @@ BEGIN_MESSAGE_MAP(CProcessMemoryDlg, CDialog)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_NOTIFY(NM_DBLCLK, IDC_LIST, OnReadMemory)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -280,4 +281,26 @@ void CProcessMemoryDlg::GetData()
 			CloseHandle(hProcess);  
 		}  
 	}
+}
+
+void CProcessMemoryDlg::OnReadMemory(NMHDR* pNMHDR, LRESULT* pResult) 
+{
+	// TODO: Add your control notification handler code here
+	NMLISTVIEW* pNMListView = (NMLISTVIEW*)pNMHDR;
+	int row = pNMListView->iItem;
+	int column = pNMListView->iSubItem;
+	CString IDstr = m_list.GetItemText(row, column);
+	int nID = _ttoi(IDstr);
+	HANDLE hProcess = GetProcessHandle(nID);
+	int tmp;
+	DWORD dwNumberOfBytesRead;
+	if (ReadProcessMemory(hProcess, (LPCVOID)0x100, &tmp, 16, &dwNumberOfBytesRead)){
+		CString txt;
+		txt.Format("%d", tmp);
+		MessageBox(txt);
+	}
+	else{
+		MessageBox("Fail to Read data from Memory! The memory maybe unavailable!");
+	}
+	*pResult = 0;
 }
